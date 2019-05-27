@@ -1,0 +1,46 @@
+# Locating_cities_on_google_map
+
+api_key = "your_key"
+
+import googlemaps
+
+gm = googlemaps.Client(key=api_key)
+
+import csv
+
+#Drop zeros
+import decimal
+
+def dropzeros(number):
+    mynum = decimal.Decimal(number).normalize()
+    # e.g 22000 --> Decimal('2.2E+4')
+    return mynum.__trunc__() if not mynum % 1 else float(mynum)
+
+with open('cities.csv') as csvfile, open('citiesw.csv', 'w') as myFile:
+    readCSV = csv.reader(csvfile, delimiter=',')
+    myFields = ['city', 'district', 'country', 'location', 'latitude', 'longitude', 'gcod']
+    writer = csv.DictWriter(myFile, lineterminator='\n', fieldnames=myFields)
+    writer.writeheader()
+    for row in readCSV:
+        geocode_result = gm.geocode(row[3])[0]
+        A0 = row[0]
+        A1 = row[1]
+        A2 = row[2]
+        A3 = row[3]
+        X = round(geocode_result['geometry']['location']['lat'],1)
+        Y = round(geocode_result['geometry']['location']['lng'],1)
+        if X >= 0:
+            Xlat = "N"
+        elif  X < 0:
+            Xlat = "S"
+            X = abs(X)
+        if Y >= 0:
+            Ylat = "E"
+        elif  Y < 0:
+            Ylat = "W"
+            Y = abs(Y)
+        A4 = dropzeros(X)
+        A5 = dropzeros(Y)
+        A6 =  str(A5) + Ylat + str(A4) + Xlat
+        #print(A3)
+        writer.writerow({'city' : A0, 'district': A1, 'country': A2, 'location': A3, 'latitude': A4, 'longitude' : A5, 'gcod' : A6})
